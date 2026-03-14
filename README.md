@@ -146,6 +146,54 @@ npm run build
 npm run dev
 ```
 
+## Publishing
+
+Two GitHub Actions workflows are provided for automated publishing:
+
+| Workflow | File | Trigger |
+|----------|------|---------|
+| **CI** | `.github/workflows/ci.yml` | Every push / PR to `main` — lints and builds |
+| **Publish** | `.github/workflows/publish.yml` | GitHub Release published **or** manual `workflow_dispatch` |
+
+The publish workflow covers two destinations:
+
+1. **NPM** (`publish-npm` job) — builds the package and runs `npm publish`.
+2. **Official MCP Registry** (`publish-mcp-registry` job) — uses the [`mcp-publisher`](https://github.com/modelcontextprotocol/registry) CLI with GitHub OIDC to push `server.json` to `registry.mcp.tools`.
+
+A [`smithery.yaml`](smithery.yaml) is also included for discovery on the [Smithery MCP marketplace](https://smithery.ai).
+
+### External configuration required
+
+#### 1 · NPM Token
+
+Create an **automation token** at <https://www.npmjs.com/settings/\<your-username\>/tokens> (type: *Automation*), then add it to the repository:
+
+> **GitHub repo → Settings → Secrets and variables → Actions → New repository secret**  
+> Name: `NPM_TOKEN`  
+> Value: `npm_xxxxxxxxxxxxxxxx`
+
+#### 2 · MCP Registry — GitHub OIDC
+
+The MCP registry uses [GitHub OIDC](https://modelcontextprotocol.io/registry/github-actions) for passwordless authentication — **no extra secret is needed**.  
+You only need to authorise the MCP Registry GitHub App for your repository once:
+
+1. Visit <https://github.com/apps/mcp-registry> and install / authorise it for `B0ydT/r_packagedev_mcp`.
+2. The `id-token: write` permission in the workflow is already set; no further action is required.
+
+#### 3 · Smithery (optional)
+
+Connect the repository to Smithery via their web UI at <https://smithery.ai>. Smithery reads `smithery.yaml` directly from the repo — no token or CI step is required.
+
+#### 4 · Versioning
+
+Before publishing a new release:
+
+1. Update `"version"` in `package.json` **and** `server.json` to the new semver (e.g. `1.1.0`).
+2. Commit and push.
+3. Create a GitHub Release with a matching tag (`v1.1.0`).
+
+The publish workflow will automatically sync the version from the git tag into both `package.json` and `server.json` at publish time, so manual edits are a safety net rather than a requirement.
+
 ## Architecture
 
 ```
