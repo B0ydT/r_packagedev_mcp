@@ -5,6 +5,7 @@ import { usethisToolSchemas, usethisHandlers } from "./tools/usethis.js";
 import { devtoolsToolSchemas, devtoolsHandlers } from "./tools/devtools.js";
 import { renvToolSchemas, renvHandlers } from "./tools/renv.js";
 import { testthatToolSchemas, testthatHandlers } from "./tools/testthat.js";
+import { ensurePackagesInstalled } from "./r-dependencies.js";
 
 // ---------------------------------------------------------------------------
 // Tool descriptions
@@ -114,7 +115,12 @@ export function createServer(): McpServer {
       name,
       TOOL_DESCRIPTIONS[name] ?? `usethis::${name}()`,
       schema.shape as z.ZodRawShape,
-      (args) => usethisHandlers[name as keyof typeof usethisHandlers](args as Record<string, unknown>)
+      async (args) => {
+        const installNote = await ensurePackagesInstalled(["usethis"]);
+        const result = await usethisHandlers[name as keyof typeof usethisHandlers](args as Record<string, unknown>);
+        if (installNote) result.content.unshift({ type: "text", text: installNote });
+        return result;
+      }
     );
   }
 
@@ -124,7 +130,12 @@ export function createServer(): McpServer {
       name,
       TOOL_DESCRIPTIONS[name] ?? `devtools::${name}()`,
       schema.shape as z.ZodRawShape,
-      (args) => devtoolsHandlers[name as keyof typeof devtoolsHandlers](args as Record<string, unknown>)
+      async (args) => {
+        const installNote = await ensurePackagesInstalled(["devtools"]);
+        const result = await devtoolsHandlers[name as keyof typeof devtoolsHandlers](args as Record<string, unknown>);
+        if (installNote) result.content.unshift({ type: "text", text: installNote });
+        return result;
+      }
     );
   }
 
@@ -134,7 +145,12 @@ export function createServer(): McpServer {
       name,
       TOOL_DESCRIPTIONS[name] ?? `renv::${name.replace("renv_", "")}()`,
       schema.shape as z.ZodRawShape,
-      (args) => renvHandlers[name as keyof typeof renvHandlers](args as Record<string, unknown>)
+      async (args) => {
+        const installNote = await ensurePackagesInstalled(["renv"]);
+        const result = await renvHandlers[name as keyof typeof renvHandlers](args as Record<string, unknown>);
+        if (installNote) result.content.unshift({ type: "text", text: installNote });
+        return result;
+      }
     );
   }
 
@@ -144,7 +160,12 @@ export function createServer(): McpServer {
       name,
       TOOL_DESCRIPTIONS[name] ?? `testthat::${name}()`,
       schema.shape as z.ZodRawShape,
-      (args) => testthatHandlers[name as keyof typeof testthatHandlers](args as Record<string, unknown>)
+      async (args) => {
+        const installNote = await ensurePackagesInstalled(["testthat"]);
+        const result = await testthatHandlers[name as keyof typeof testthatHandlers](args as Record<string, unknown>);
+        if (installNote) result.content.unshift({ type: "text", text: installNote });
+        return result;
+      }
     );
   }
 
