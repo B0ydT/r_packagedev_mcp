@@ -108,8 +108,15 @@ const ADDITIONAL_PACKAGES: Record<string, string[]> = {
   // which requires the testthat package to be installed.
   use_testthat: ["testthat"],
   use_test: ["testthat"],
+  // usethis::use_vignette() calls check_installed(c("knitr", "rmarkdown")) at runtime;
+  // both are only Suggested by usethis, not Imported.
+  use_vignette: ["knitr", "rmarkdown"],
   // devtools::test() delegates to testthat, so testthat must be present.
   test: ["testthat"],
+  // devtools::build_readme() calls rmarkdown::render(); rmarkdown is only Suggested by devtools.
+  build_readme: ["rmarkdown"],
+  // devtools::spell_check() calls spelling::spell_check_package(); spelling is only Suggested by devtools.
+  spell_check: ["spelling"],
 };
 
 // ---------------------------------------------------------------------------
