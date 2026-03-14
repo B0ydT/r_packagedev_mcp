@@ -100,6 +100,19 @@ const TOOL_DESCRIPTIONS: Record<string, string> = {
 };
 
 // ---------------------------------------------------------------------------
+// Additional R packages required by specific tools beyond their group's primary package
+// ---------------------------------------------------------------------------
+
+const ADDITIONAL_PACKAGES: Record<string, string[]> = {
+  // usethis::use_testthat() and usethis::use_test() scaffold testthat infrastructure,
+  // which requires the testthat package to be installed.
+  use_testthat: ["testthat"],
+  use_test: ["testthat"],
+  // devtools::test() delegates to testthat, so testthat must be present.
+  test: ["testthat"],
+};
+
+// ---------------------------------------------------------------------------
 // Server factory
 // ---------------------------------------------------------------------------
 
@@ -116,7 +129,7 @@ export function createServer(): McpServer {
       TOOL_DESCRIPTIONS[name] ?? `usethis::${name}()`,
       schema.shape as z.ZodRawShape,
       async (args) => {
-        const installNote = await ensurePackagesInstalled(["usethis"]);
+        const installNote = await ensurePackagesInstalled(["usethis", ...(ADDITIONAL_PACKAGES[name] ?? [])]);
         const result = await usethisHandlers[name as keyof typeof usethisHandlers](args as Record<string, unknown>);
         if (installNote) result.content.unshift({ type: "text", text: installNote });
         return result;
@@ -131,7 +144,7 @@ export function createServer(): McpServer {
       TOOL_DESCRIPTIONS[name] ?? `devtools::${name}()`,
       schema.shape as z.ZodRawShape,
       async (args) => {
-        const installNote = await ensurePackagesInstalled(["devtools"]);
+        const installNote = await ensurePackagesInstalled(["devtools", ...(ADDITIONAL_PACKAGES[name] ?? [])]);
         const result = await devtoolsHandlers[name as keyof typeof devtoolsHandlers](args as Record<string, unknown>);
         if (installNote) result.content.unshift({ type: "text", text: installNote });
         return result;
@@ -146,7 +159,7 @@ export function createServer(): McpServer {
       TOOL_DESCRIPTIONS[name] ?? `renv::${name.replace("renv_", "")}()`,
       schema.shape as z.ZodRawShape,
       async (args) => {
-        const installNote = await ensurePackagesInstalled(["renv"]);
+        const installNote = await ensurePackagesInstalled(["renv", ...(ADDITIONAL_PACKAGES[name] ?? [])]);
         const result = await renvHandlers[name as keyof typeof renvHandlers](args as Record<string, unknown>);
         if (installNote) result.content.unshift({ type: "text", text: installNote });
         return result;
@@ -161,7 +174,7 @@ export function createServer(): McpServer {
       TOOL_DESCRIPTIONS[name] ?? `testthat::${name}()`,
       schema.shape as z.ZodRawShape,
       async (args) => {
-        const installNote = await ensurePackagesInstalled(["testthat"]);
+        const installNote = await ensurePackagesInstalled(["testthat", ...(ADDITIONAL_PACKAGES[name] ?? [])]);
         const result = await testthatHandlers[name as keyof typeof testthatHandlers](args as Record<string, unknown>);
         if (installNote) result.content.unshift({ type: "text", text: installNote });
         return result;
