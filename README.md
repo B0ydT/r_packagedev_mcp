@@ -166,4 +166,4 @@ Each tool module exports:
 
 ## License
 
-MIT
+CC BY 4.0
