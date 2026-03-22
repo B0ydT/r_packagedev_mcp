@@ -5,6 +5,7 @@ import { usethisToolSchemas, usethisHandlers } from "./tools/usethis.js";
 import { devtoolsToolSchemas, devtoolsHandlers } from "./tools/devtools.js";
 import { renvToolSchemas, renvHandlers } from "./tools/renv.js";
 import { testthatToolSchemas, testthatHandlers } from "./tools/testthat.js";
+import { pkgdownToolSchemas, pkgdownHandlers } from "./tools/pkgdown.js";
 import { ensurePackagesInstalled } from "./r-dependencies.js";
 
 // ---------------------------------------------------------------------------
@@ -97,6 +98,24 @@ const TOOL_DESCRIPTIONS: Record<string, string> = {
   test_dir:
     "Run all test files in a directory (optionally filtered) using testthat::test_dir(). " +
     "Returns a summary of pass/fail/skip counts.",
+
+  // pkgdown
+  pkgdown_build_site:
+    "Build the complete pkgdown documentation website for a package using pkgdown::build_site(). " +
+    "Generates reference pages, articles, and the home page into the docs/ directory.",
+  pkgdown_init_site:
+    "Initialise the pkgdown site configuration (_pkgdown.yml) and shared assets using pkgdown::init_site(). " +
+    "Run this before building individual site components.",
+  pkgdown_build_home:
+    "Build the pkgdown home page (index.html) from README.md using pkgdown::build_home().",
+  pkgdown_build_reference:
+    "Build the reference/documentation section of the pkgdown site using pkgdown::build_reference(). " +
+    "Generates one HTML page per exported topic.",
+  pkgdown_build_articles:
+    "Build the articles (vignettes) section of the pkgdown site using pkgdown::build_articles(). " +
+    "Renders all vignettes as HTML pages.",
+  pkgdown_build_news:
+    "Build the news/changelog section of the pkgdown site from NEWS.md using pkgdown::build_news().",
 };
 
 // ---------------------------------------------------------------------------
@@ -117,6 +136,10 @@ const ADDITIONAL_PACKAGES: Record<string, string[]> = {
   build_readme: ["rmarkdown"],
   // devtools::spell_check() calls spelling::spell_check_package(); spelling is only Suggested by devtools.
   spell_check: ["spelling"],
+  // pkgdown::build_articles() renders vignettes via rmarkdown.
+  pkgdown_build_articles: ["rmarkdown"],
+  // pkgdown::build_site() renders vignettes too.
+  pkgdown_build_site: ["rmarkdown"],
 };
 
 // ---------------------------------------------------------------------------
@@ -183,6 +206,21 @@ export function createServer(): McpServer {
       async (args) => {
         const installNote = await ensurePackagesInstalled(["testthat", ...(ADDITIONAL_PACKAGES[name] ?? [])]);
         const result = await testthatHandlers[name as keyof typeof testthatHandlers](args as Record<string, unknown>);
+        if (installNote) result.content.unshift({ type: "text", text: installNote });
+        return result;
+      }
+    );
+  }
+
+  // Register pkgdown tools
+  for (const [name, schema] of Object.entries(pkgdownToolSchemas)) {
+    server.tool(
+      name,
+      TOOL_DESCRIPTIONS[name] ?? `pkgdown::${name.replace("pkgdown_", "")}()`,
+      schema.shape as z.ZodRawShape,
+      async (args) => {
+        const installNote = await ensurePackagesInstalled(["pkgdown", ...(ADDITIONAL_PACKAGES[name] ?? [])]);
+        const result = await pkgdownHandlers[name as keyof typeof pkgdownHandlers](args as Record<string, unknown>);
         if (installNote) result.content.unshift({ type: "text", text: installNote });
         return result;
       }
