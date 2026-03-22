@@ -111,18 +111,21 @@ jobs:
 
   # ──────────────────────────────────────────────
   # Job 3: Publish to the official MCP Registry
-  # Note: runs after publish-npm when both are active so the npm package
-  # is live before the registry entry references it. When using
-  # workflow_dispatch with publish_npm=false, this job runs independently
-  # against the existing npm release.
+  # Note: always runs after publish-npm so the npm package is live before
+  # the registry entry references it. When publish-npm is skipped (e.g.
+  # workflow_dispatch with publish_npm=false), this job still runs against
+  # the existing npm release. If publish-npm fails, this job is blocked.
   # ──────────────────────────────────────────────
   publish-mcp-registry:
     name: Publish to MCP Registry
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, publish-npm]
     if: >
-      (github.event_name == 'release' && github.event.action == 'published') ||
-      (github.event_name == 'workflow_dispatch' && inputs.publish_mcp == true)
+      always() &&
+      needs.build.result == 'success' &&
+      (needs.publish-npm.result == 'success' || needs.publish-npm.result == 'skipped') &&
+      ((github.event_name == 'release' && github.event.action == 'published') ||
+      (github.event_name == 'workflow_dispatch' && inputs.publish_mcp == true))
     permissions:
       id-token: write  # Required for OIDC authentication with the MCP Registry
       contents: read
