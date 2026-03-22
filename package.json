@@ -25,6 +25,7 @@
     "renv",
     "testthat"
   ],
+  "mcpName": "io.github.b0ydt/r-packagedev-mcp",
   "author": "",
   "license": "MIT",
   "type": "commonjs",

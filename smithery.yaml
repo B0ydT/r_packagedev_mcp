@@ -1,0 +1,26 @@
+# Smithery configuration file: https://smithery.ai/docs/build/project-config
+#
+# NOTE: r-packagedev-mcp is a LOCAL-ONLY stdio server.
+# It calls `Rscript` on the host machine, so R (>= 4.1) plus the
+# usethis, devtools, renv, and testthat packages must be installed
+# on the machine running the server. Smithery cloud deployment is
+# therefore not applicable; this file is provided for discovery
+# and local-launch metadata only.
+
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    description: >
+      No runtime configuration is required.
+      R must be installed on the host system along with the
+      usethis, devtools, renv, and testthat packages.
+    properties: {}
+    required: []
+  commandFunction: |-
+    (config) => ({
+      command: "npx",
+      args: ["-y", "r-packagedev-mcp"],
+      env: {}
+    })
+  exampleConfig: {}

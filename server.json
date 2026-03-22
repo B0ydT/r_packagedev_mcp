@@ -1,0 +1,13 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-07-09/server.schema.json",
+  "name": "io.github.b0ydt/r-packagedev-mcp",
+  "description": "MCP server for R package development using usethis, devtools, renv, and testthat",
+  "version": "1.0.0",
+  "packages": [
+    {
+      "registry_type": "npm",
+      "identifier": "r-packagedev-mcp",
+      "version": "1.0.0"
+    }
+  ]
+}
