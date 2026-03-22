@@ -1,5 +1,9 @@
 # r-packagedev-mcp
 
+[![CI](https://github.com/B0ydT/r-packagedev-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/B0ydT/r-packagedev-mcp/actions/workflows/ci.yml)
+[![npm version](https://img.shields.io/npm/v/r-packagedev-mcp)](https://www.npmjs.com/package/r-packagedev-mcp)
+[![MCP Registry](https://img.shields.io/badge/MCP_Registry-r--packagedev--mcp-blue)](https://registry.modelcontextprotocol.io/#/servers/io.github.B0ydT/r-packagedev-mcp)
+
 A standalone [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server that exposes advanced R package development capabilities to AI assistants through natural language.
 
 ## Overview
